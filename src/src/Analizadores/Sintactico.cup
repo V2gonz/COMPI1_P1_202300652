@@ -1,0 +1,182 @@
+package analizadores;
+
+import java_cup.runtime.Symbol;
+
+parser code
+{:
+    public void syntax_error(Symbol s){
+        Reportes.TablaErrores.agregar(
+            "Sintactico",
+            "Error cerca de: " + s.value,
+            s.left,
+            s.right
+        );
+    }
+:};
+
+terminal DATABASE, USE, TABLE, READ, FIELDS, FILTER;
+terminal ADD, UPDATE, CLEAR, EXPORT;
+terminal STORE, AT, SET;
+
+terminal INT, FLOAT, BOOL, STRING_TYPE, ARRAY, OBJECT, NULL;
+
+terminal TRUE, FALSE;
+
+terminal IGUAL, DIFERENTE, MAYOR, MENOR, MAYORIGUAL, MENORIGUAL;
+terminal AND, OR, NOT;
+
+terminal LLAVE_A, LLAVE_C;
+terminal PAR_A, PAR_C;
+terminal COR_A, COR_C;
+
+terminal DOSPT, PTCOMA, COMA, ASIG;
+
+terminal ID, ENTERO, DECIMAL, CADENA;
+
+non terminal inicio;
+non terminal lista_sentencias;
+non terminal sentencia;
+
+non terminal database_decl;
+non terminal use_decl;
+non terminal table_decl;
+non terminal lista_campos;
+non terminal campo;
+non terminal tipo;
+
+non terminal add_stmt;
+non terminal lista_valores;
+non terminal valor;
+
+non terminal read_stmt;
+non terminal fields_stmt;
+non terminal filter_stmt;
+
+non terminal expresion;
+
+non terminal update_stmt;
+non terminal clear_stmt;
+non terminal export_stmt;
+
+start with inicio;
+
+inicio ::= lista_sentencias ;
+
+lista_sentencias ::=
+        lista_sentencias sentencia
+        | sentencia
+;
+
+sentencia ::=
+        database_decl
+        | use_decl
+        | table_decl
+        | add_stmt
+        | read_stmt
+        | update_stmt
+        | clear_stmt
+        | export_stmt
+;
+
+database_decl ::=
+        DATABASE ID LLAVE_A STORE AT CADENA PTCOMA LLAVE_C
+;
+
+use_decl ::=
+        USE ID PTCOMA
+;
+
+table_decl ::=
+        TABLE ID LLAVE_A lista_campos LLAVE_C
+;
+
+lista_campos ::=
+        lista_campos campo
+        | campo
+;
+
+campo ::=
+        ID DOSPT tipo PTCOMA
+;
+
+tipo ::=
+        INT
+        | FLOAT
+        | BOOL
+        | STRING_TYPE
+        | ARRAY
+        | OBJECT
+;
+
+add_stmt ::=
+        ADD ID LLAVE_A lista_valores LLAVE_C PTCOMA
+;
+
+lista_valores ::=
+        lista_valores COMA valor
+        | valor
+;
+
+valor ::=
+        ID DOSPT ENTERO
+        | ID DOSPT DECIMAL
+        | ID DOSPT CADENA
+        | ID DOSPT TRUE
+        | ID DOSPT FALSE
+;
+
+read_stmt ::=
+        READ ID LLAVE_A fields_stmt filter_stmt LLAVE_C PTCOMA
+;
+
+fields_stmt ::=
+        FIELDS DOSPT lista_ids PTCOMA
+;
+
+non terminal lista_ids;
+
+lista_ids ::=
+        lista_ids COMA ID
+        | ID
+;
+
+filter_stmt ::=
+        FILTER DOSPT expresion PTCOMA
+;
+
+expresion ::=
+        expresion AND expresion
+        | expresion OR expresion
+        | NOT expresion
+        | ID IGUAL valor
+        | ID DIFERENTE valor
+        | ID MAYOR valor
+        | ID MENOR valor
+        | ID MAYORIGUAL valor
+        | ID MENORIGUAL valor
+        | PAR_A expresion PAR_C
+;
+
+update_stmt ::=
+        UPDATE ID LLAVE_A SET lista_asignaciones filter_stmt LLAVE_C PTCOMA
+;
+
+non terminal lista_asignaciones;
+non terminal asignacion;
+
+lista_asignaciones ::=
+        lista_asignaciones COMA asignacion
+        | asignacion
+;
+
+asignacion ::=
+        ID ASIG valor
+;
+
+clear_stmt ::=
+        CLEAR ID PTCOMA
+;
+
+export_stmt ::=
+        EXPORT CADENA PTCOMA
+;
